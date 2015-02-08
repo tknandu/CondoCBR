@@ -46,6 +46,7 @@ public class MyCBRTest {
 			i.addAttribute(manufacturerDesc,manufacturerDesc.getAttribute("Ford"));
 			cb.addCase(i);
 			
+			
 			// set up query and retrieval
 			Retrieval r = new Retrieval(car, cb);
 			Instance q = r.getQueryInstance();	
