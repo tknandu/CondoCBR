@@ -1,10 +1,12 @@
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import de.dfki.mycbr.core.DefaultCaseBase;
 import de.dfki.mycbr.core.Project;
-import de.dfki.mycbr.core.casebase.Case;
+import de.dfki.mycbr.core.casebase.*;
+import de.dfki.mycbr.core.retrieval.*;
 import de.dfki.mycbr.core.casebase.Instance;
 import de.dfki.mycbr.core.model.Concept;
 import de.dfki.mycbr.core.model.SymbolDesc;
@@ -41,13 +43,13 @@ public class MyCBRTest {
 			
 			// add Case
 			Instance i = car.addInstance("car1");
-			i.addAttribute(manufacturerDesc,manufacturerDesc.getAttribute("BMW"));
-			cb.addCase(i, "car1");
+			i.addAttribute(manufacturerDesc,manufacturerDesc.getAttribute("Ford"));
+			cb.addCase(i);
 			
 			// set up query and retrieval
-			Retrieval r = new Retrieval(car);
-			Instance q = r.getQuery();	
-			q.addAttribute(manufacturerDesc.getName(),manufacturerDesc.getAttribute("Audi"));
+			Retrieval r = new Retrieval(car, cb);
+			Instance q = r.getQueryInstance();	
+			q.addAttribute(manufacturerDesc.getName(),manufacturerDesc.getAttribute("VW"));
 			
 			r.start();
 
@@ -60,9 +62,9 @@ public class MyCBRTest {
 	}
 
 	private static void print(Retrieval r) {
-		for (Map.Entry<Case, Similarity> entry: r.entrySet()) {
+		for (Entry<Instance, Similarity> entry: r.entrySet()) {
 			System.out.println("\nSimilarity: " + entry.getValue().getValue()
-					+ " to case: " + entry.getKey().getID());
+					+ " to case: " + entry.getKey());
 		}
 	}
 }
