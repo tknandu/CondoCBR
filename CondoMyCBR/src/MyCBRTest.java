@@ -10,10 +10,11 @@ import de.dfki.mycbr.core.retrieval.*;
 import de.dfki.mycbr.core.casebase.Instance;
 import de.dfki.mycbr.core.model.Concept;
 import de.dfki.mycbr.core.model.SymbolDesc;
+import de.dfki.mycbr.core.model.*;
 import de.dfki.mycbr.core.retrieval.Retrieval;
 import de.dfki.mycbr.core.similarity.Similarity;
 import de.dfki.mycbr.core.similarity.SymbolFct;
-
+import de.dfki.mycbr.core.similarity.SpecialFct;
 
 public class MyCBRTest {
 
@@ -31,19 +32,22 @@ public class MyCBRTest {
 					"Mercedes", "SEAT", "FIAT" };
 			manufacturers.addAll(Arrays.asList(manufacturersArray));
 			SymbolDesc manufacturerDesc = new SymbolDesc(car,"manufacturer",manufacturers);
+			StringDesc carMake = new StringDesc(car,"Make"); 
 			
 			// add table function
 			SymbolFct manuFct = manufacturerDesc.addSymbolFct("manuFct", true);
 			manuFct.setSimilarity("BMW", "Audi", 0.60d);
 			manuFct.setSimilarity("Audi", "VW", 0.20d);
-			manuFct.setSimilarity("VW", "Ford", 0.40d);			
+			manuFct.setSimilarity("VW", "Ford", 0.40d);
+			
+			//SpecialFct carMakeFct = carMake.
 
 			// add cassebase
 			DefaultCaseBase cb = p.createDefaultCB("myCaseBase");
 			
 			// add Case
 			Instance i = car.addInstance("car1");
-			i.addAttribute(manufacturerDesc,manufacturerDesc.getAttribute("Ford"));
+			i.addAttribute(manufacturerDesc,manufacturerDesc.getAttribute("Audi"));
 			cb.addCase(i);
 			
 			// set up query and retrieval
