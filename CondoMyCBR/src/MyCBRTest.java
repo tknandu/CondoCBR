@@ -1,12 +1,9 @@
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import de.dfki.mycbr.core.DefaultCaseBase;
 import de.dfki.mycbr.core.Project;
-import de.dfki.mycbr.core.casebase.*;
-import de.dfki.mycbr.core.retrieval.*;
 import de.dfki.mycbr.core.casebase.Instance;
 import de.dfki.mycbr.core.model.Concept;
 import de.dfki.mycbr.core.model.SymbolDesc;
@@ -49,7 +46,6 @@ public class MyCBRTest {
 			Instance i = car.addInstance("car1");
 			i.addAttribute(manufacturerDesc,manufacturerDesc.getAttribute("Audi"));
 			cb.addCase(i);
-			
 			
 			// set up query and retrieval
 			Retrieval r = new Retrieval(car, cb);
