@@ -36,7 +36,7 @@ public class CondoCBR {
 			readData("data/postProcessedCondoData.csv");
 			System.out.println("No of cases read: "+cb.getCases().size());
 			
-			
+			System.out.println(condo.getAttributeDescs());
 			
 		}
 		catch (Exception e) {
