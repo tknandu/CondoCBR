@@ -1,5 +1,7 @@
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map.Entry;
+
 import de.dfki.mycbr.core.DefaultCaseBase;
 import de.dfki.mycbr.core.Project;
 import de.dfki.mycbr.core.casebase.Instance;
@@ -10,8 +12,10 @@ import de.dfki.mycbr.core.model.StringDesc;
 import de.dfki.mycbr.core.model.SymbolDesc;
 import de.dfki.mycbr.core.model.IntegerDesc;
 import de.dfki.mycbr.io.CSVImporter;
+import de.dfki.mycbr.core.retrieval.Retrieval;
 import de.dfki.mycbr.core.similarity.FloatFct;
 import de.dfki.mycbr.core.similarity.IntegerFct;
+import de.dfki.mycbr.core.similarity.Similarity;
 import de.dfki.mycbr.core.similarity.StringFct;
 import de.dfki.mycbr.core.similarity.SymbolFct;
 import de.dfki.mycbr.core.similarity.config.DistanceConfig;
@@ -189,6 +193,16 @@ public class CondoCBR {
 			marketValuePerSqFtSim.setFunctionParameterR(0.5);
 			marketValuePerSqFt.addFct(marketValuePerSqFtSim);
 			
+			
+			
+			// set up query and retrieval
+			Retrieval r = new Retrieval(condo, cb);
+			Instance q = r.getQueryInstance();	
+			q.addAttribute(yearBuilt.getName(),1990);
+			//q.addAttribute(mileage.getName(), 0.2);
+			r.start();
+
+			print(r,yearBuilt);
 			// other pairs sim ?
 			/*
 			Iterator it = attMap.entrySet().iterator();
@@ -204,6 +218,13 @@ public class CondoCBR {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private static void print(Retrieval r, AttributeDesc d) {
+		for (Entry<Instance, Similarity> entry: r.entrySet()) {
+			System.out.println("\nSimilarity: " + entry.getValue().getValue()
+					+ " to case: " + entry.getKey().getAttForDesc(d));
 		}
 	}
 	
