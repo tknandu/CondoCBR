@@ -105,6 +105,7 @@ public class CondoCBR {
 			
 			// 5.Neighborhood
 			StringDesc neighborhood = (StringDesc) attMap.get("Neighborhood");
+			neighborhood.deleteAllFcts();
 			StringFct neighborhoodSim = new StringFct(p,StringConfig.NGRAM,neighborhood,"NeighborhoodSim");
 			neighborhoodSim.setCaseSensitive(false);
 			neighborhoodSim.setSymmetric(true);
@@ -128,9 +129,10 @@ public class CondoCBR {
 			yearBuiltSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			yearBuiltSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			yearBuiltSim.setFunctionTypeR(NumberConfig.CONSTANT);
-			yearBuiltSim.setFunctionParameterL(10);
+			yearBuiltSim.setFunctionParameterL(1.0);
 			yearBuiltSim.setFunctionParameterR(1.0);
 			yearBuilt.addFct(yearBuiltSim);
+			
 			
 			//8.AreaSqFt
 			//rename to area in square feet
@@ -192,28 +194,18 @@ public class CondoCBR {
 			marketValuePerSqFtSim.setFunctionParameterL(0.5);
 			marketValuePerSqFtSim.setFunctionParameterR(0.5);
 			marketValuePerSqFt.addFct(marketValuePerSqFtSim);
-			
+			System.out.println(marketValuePerSqFt.getMax());
 			
 			
 			// set up query and retrieval
 			Retrieval r = new Retrieval(condo, cb);
 			Instance q = r.getQueryInstance();	
-			q.addAttribute(yearBuilt.getName(),1990);
+			q.addAttribute(yearBuilt,2000);
+			//q.addAttribute(totalUnits,40);
+			//q.addAttribute(neighborhood, "EST SIDE");
 			//q.addAttribute(mileage.getName(), 0.2);
 			r.start();
-
-			print(r,yearBuilt);
-			// other pairs sim ?
-			/*
-			Iterator it = attMap.entrySet().iterator();
-	    while (it.hasNext()) {
-	        Map.Entry pairs = (Map.Entry)it.next();
-	        System.out.println(pairs.getKey() + " = " + (AttributeDesc)pairs.getValue());
-	    }
-			
-			System.out.println(cases.get(0).getConcept().getAttributeDesc("Address"));
-			*/
-
+			print(r,neighborhood);
 			
 		}
 		catch (Exception e) {
@@ -224,7 +216,7 @@ public class CondoCBR {
 	private static void print(Retrieval r, AttributeDesc d) {
 		for (Entry<Instance, Similarity> entry: r.entrySet()) {
 			System.out.println("\nSimilarity: " + entry.getValue().getValue()
-					+ " to case: " + entry.getKey().getAttForDesc(d));
+					+ " to case: " + entry.getKey().getAttForDesc(d).getValueAsString());
 		}
 	}
 	
