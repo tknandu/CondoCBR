@@ -48,7 +48,7 @@ public class CondoCBR {
 			condo =  p.createTopConcept("Condo");
 			cb = p.createDefaultCB("myCaseBase");
 			
-			readData("data/postProcessedCondoData.csv");
+			readData("data/processedCondo_latest.csv");
 			System.out.println("No of cases read: "+cb.getCases().size());
 			
 
@@ -69,7 +69,7 @@ public class CondoCBR {
 			System.out.println(addressSim.calculateSimilarity(cases.get(0).getAttForDesc(address), cases.get(1).getAttForDesc(address)));
 			
 			// 2. Boro-Block-Lot
-
+            // Sim measure
 			StringDesc lot = (StringDesc) attMap.get("Boro-Block-Lot");
 			StringFct lotSim = new StringFct(p,StringConfig.EQUALITY,lot,"LotSim");
 			lotSim.setCaseSensitive(false);
@@ -78,56 +78,66 @@ public class CondoCBR {
 
 
 			// 3. BuildingClassification
-
+            
 			SymbolDesc buildingClass = (SymbolDesc) attMap.get("BuildingClassification");
 			SymbolFct buildSim = buildingClass.addSymbolFct("buildSim", true);
 			buildSim.setSymmetric(true);
-			buildSim.setSimilarity("R2-CONDOMINIUM", "R4-CONDOMINIUM", 0.60d);
+			buildSim.setSimilarity("R2-CONDOMINIUM", "R4-CONDOMINIUM", (2.0/14.0));
+			buildSim.setSimilarity("R2-CONDOMINIUM", "R9-CONDOMINIUM", (7.0/14.0));
+			buildSim.setSimilarity("R2-CONDOMINIUM", "RR-CONDOMINIUM", (14.0/14.0));
+			buildSim.setSimilarity("R4-CONDOMINIUM", "R9-CONDOMINIUM", (5.0/14.0));
+			buildSim.setSimilarity("R4-CONDOMINIUM", "RR-CONDOMINIUM", (12.0/14.0));
+			buildSim.setSimilarity("R9-CONDOMINIUM", "RR-CONDOMINIUM", (7.0/14.0));
 			
 			// 4. CondoSection
+			//Drop this
+			/*
 			StringDesc condoSection = (StringDesc) attMap.get("CondoSection");
 			StringFct condoSectionSim = new StringFct(p,StringConfig.EQUALITY,lot,"CondoSectionSim");
 			condoSectionSim.setCaseSensitive(false);
 			condoSectionSim.setSymmetric(true);
 			condoSection.addFct(condoSectionSim);
+			*/
 			
 			// 5.Neighborhood
-
 			StringDesc neighborhood = (StringDesc) attMap.get("Neighborhood");
-			StringFct neighborhoodSim = new StringFct(p,StringConfig.EQUALITY,neighborhood,"NeighborhoodSim");
+			StringFct neighborhoodSim = new StringFct(p,StringConfig.NGRAM,neighborhood,"NeighborhoodSim");
 			neighborhoodSim.setCaseSensitive(false);
 			neighborhoodSim.setSymmetric(true);
 			neighborhood.addFct(neighborhoodSim);
 			
 			// 6.Total Units
+			//Upper Bound
+			//If the number of units are slightly more, we penalize more heavily
 			IntegerDesc totalUnits = (IntegerDesc) attMap.get("TotalUnits");
 			IntegerFct  totalUnitSim = new IntegerFct(p,totalUnits,"TotalUnitsSim");
 			totalUnitSim.setDistanceFct(DistanceConfig.DIFFERENCE);
-			totalUnitSim.setFunctionTypeL(NumberConfig.CONSTANT);
-			totalUnitSim.setFunctionTypeR(NumberConfig.CONSTANT);
-			totalUnitSim.setFunctionParameterL(0.5);
-			totalUnitSim.setFunctionParameterR(0.5);
+			totalUnitSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
+			totalUnitSim.setFunctionTypeR(NumberConfig.POLYNOMIAL_WITH);
+			totalUnitSim.setFunctionParameterL(1.0);
+			totalUnitSim.setFunctionParameterR(2.0);
 			totalUnits.addFct(totalUnitSim);
 			
 			//7.Year Built
 			IntegerDesc yearBuilt = (IntegerDesc) attMap.get("YearBuilt");
 			IntegerFct  yearBuiltSim = new IntegerFct(p,yearBuilt,"YearBuiltSim");
 			yearBuiltSim.setDistanceFct(DistanceConfig.DIFFERENCE);
-			yearBuiltSim.setFunctionTypeL(NumberConfig.CONSTANT);
+			yearBuiltSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			yearBuiltSim.setFunctionTypeR(NumberConfig.CONSTANT);
-			yearBuiltSim.setFunctionParameterL(0.5);
-			yearBuiltSim.setFunctionParameterR(0.5);
+			yearBuiltSim.setFunctionParameterL(10);
+			yearBuiltSim.setFunctionParameterR(1.0);
 			yearBuilt.addFct(yearBuiltSim);
 			
-			//8.GrossSqFt
-			IntegerDesc grossSqFt = (IntegerDesc) attMap.get("GrossSqFt");
-			IntegerFct  grossSqFtSim = new IntegerFct(p,grossSqFt,"GrossSqFtSim");
-			grossSqFtSim.setDistanceFct(DistanceConfig.DIFFERENCE);
-			grossSqFtSim.setFunctionTypeL(NumberConfig.CONSTANT);
-			grossSqFtSim.setFunctionTypeR(NumberConfig.CONSTANT);
-			grossSqFtSim.setFunctionParameterL(0.5);
-			grossSqFtSim.setFunctionParameterR(0.5);
-			grossSqFt.addFct(grossSqFtSim);
+			//8.AreaSqFt
+			//rename to area in square feet
+			FloatDesc areaSqFt = (FloatDesc) attMap.get("AreaSqFt");
+			FloatFct  areaSqFtSim = new FloatFct(p,areaSqFt,"AreaSqFtSim");
+			areaSqFtSim.setDistanceFct(DistanceConfig.DIFFERENCE);
+			areaSqFtSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
+			areaSqFtSim.setFunctionTypeR(NumberConfig.POLYNOMIAL_WITH);
+			areaSqFtSim.setFunctionParameterL(5.0);
+			areaSqFtSim.setFunctionParameterR(3.0);
+			areaSqFt.addFct(areaSqFtSim);
 			
 			//9.GrossIncomePerSqFt
 			FloatDesc grossIncomePerSqFt = (FloatDesc) attMap.get("GrossIncomePerSqFt");
@@ -135,8 +145,8 @@ public class CondoCBR {
 			grossIncomePerSqFtSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			grossIncomePerSqFtSim.setFunctionTypeL(NumberConfig.CONSTANT);
 			grossIncomePerSqFtSim.setFunctionTypeR(NumberConfig.CONSTANT);
-			grossIncomePerSqFtSim.setFunctionParameterL(0.5);
-			grossIncomePerSqFtSim.setFunctionParameterR(0.5);
+			grossIncomePerSqFtSim.setFunctionParameterL(1.0);
+			grossIncomePerSqFtSim.setFunctionParameterR(1.0);
 			grossIncomePerSqFt.addFct(grossIncomePerSqFtSim);
 
 			//10.ExpensePerSqFt
@@ -145,8 +155,8 @@ public class CondoCBR {
 			expensePerSqFtSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			expensePerSqFtSim.setFunctionTypeL(NumberConfig.CONSTANT);
 			expensePerSqFtSim.setFunctionTypeR(NumberConfig.CONSTANT);
-			expensePerSqFtSim.setFunctionParameterL(0.5);
-			expensePerSqFtSim.setFunctionParameterR(0.5);
+			expensePerSqFtSim.setFunctionParameterL(1.0);
+			expensePerSqFtSim.setFunctionParameterR(1.0);
 			expensePerSqFt.addFct(expensePerSqFtSim);
 			
 			//11.NetOperatingIncome
