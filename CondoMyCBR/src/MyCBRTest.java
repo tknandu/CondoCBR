@@ -47,7 +47,7 @@ public class MyCBRTest {
 			manuFct.setSimilarity("BMW", "Audi", 0.60d);
 			manuFct.setSimilarity("Audi", "VW", 0.20d);
 			manuFct.setSimilarity("VW", "Ford", 0.40d);
-			
+			manufacturerDesc.getSimFcts();
 			//SpecialFct carMakeFct = carMake.
 
 			// add cassebase
@@ -56,14 +56,14 @@ public class MyCBRTest {
 			// add Case
 			Instance i = car.addInstance("car1");
 			i.addAttribute(manufacturerDesc,manufacturerDesc.getAttribute("Audi"));
-			i.addAttribute(mileage, 0.3);
+			//i.addAttribute(mileage, 0.3);
 			cb.addCase(i);
 			
 			// set up query and retrieval
 			Retrieval r = new Retrieval(car, cb);
 			Instance q = r.getQueryInstance();	
-			q.addAttribute(manufacturerDesc.getName(),manufacturerDesc.getAttribute("VW"));
-			q.addAttribute(mileage.getName(), 0.2);
+			q.addAttribute(manufacturerDesc,manufacturerDesc.getAttribute("VW"));
+			//q.addAttribute(mileage.getName(), 0.2);
 			r.start();
 
 			print(r);

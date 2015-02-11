@@ -1,6 +1,10 @@
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import de.dfki.mycbr.core.DefaultCaseBase;
 import de.dfki.mycbr.core.Project;
@@ -54,6 +58,7 @@ public class CondoCBR {
 			
 			readData("data/processedCondo_latest.csv");
 			System.out.println("No of cases read: "+cb.getCases().size());
+			System.out.println(condo.getAttributeDescs());
 			
 
 			System.out.println(condo.getAttributeDescs());
@@ -64,27 +69,22 @@ public class CondoCBR {
 			
 			// 1. Address
 			StringDesc address = (StringDesc) attMap.get("Address");
-			StringFct addressSim = new StringFct(p,StringConfig.NGRAM,address,"AddressSim");
+			//StringFct addressSim = (StringFct) address.getFct("default function");
+			StringFct addressSim = address.addStringFct(StringConfig.NGRAM, "default function", true);
 			addressSim.setCaseSensitive(false);
 			addressSim.setSymmetric(true);
 			addressSim.setN(3); // trigram similarity
-			System.out.println(cases.get(0).getAttForDesc(address));
-			System.out.println(cases.get(1).getAttForDesc(address));
-			System.out.println(addressSim.calculateSimilarity(cases.get(0).getAttForDesc(address), cases.get(1).getAttForDesc(address)));
 			
 			// 2. Boro-Block-Lot
-            // Sim measure
 			StringDesc lot = (StringDesc) attMap.get("Boro-Block-Lot");
-			StringFct lotSim = new StringFct(p,StringConfig.EQUALITY,lot,"LotSim");
+			StringFct lotSim = (StringFct) lot.getFct("default function");
 			lotSim.setCaseSensitive(false);
 			lotSim.setSymmetric(true);
-			lot.addFct(lotSim);
-
 
 			// 3. BuildingClassification
             
 			SymbolDesc buildingClass = (SymbolDesc) attMap.get("BuildingClassification");
-			SymbolFct buildSim = buildingClass.addSymbolFct("buildSim", true);
+			SymbolFct buildSim = (SymbolFct) buildingClass.getFct("default function");
 			buildSim.setSymmetric(true);
 			buildSim.setSimilarity("R2-CONDOMINIUM", "R4-CONDOMINIUM", (2.0/14.0));
 			buildSim.setSimilarity("R2-CONDOMINIUM", "R9-CONDOMINIUM", (7.0/14.0));
@@ -93,131 +93,156 @@ public class CondoCBR {
 			buildSim.setSimilarity("R4-CONDOMINIUM", "RR-CONDOMINIUM", (12.0/14.0));
 			buildSim.setSimilarity("R9-CONDOMINIUM", "RR-CONDOMINIUM", (7.0/14.0));
 			
-			// 4. CondoSection
-			//Drop this
-			/*
-			StringDesc condoSection = (StringDesc) attMap.get("CondoSection");
-			StringFct condoSectionSim = new StringFct(p,StringConfig.EQUALITY,lot,"CondoSectionSim");
-			condoSectionSim.setCaseSensitive(false);
-			condoSectionSim.setSymmetric(true);
-			condoSection.addFct(condoSectionSim);
-			*/
-			
 			// 5.Neighborhood
 			StringDesc neighborhood = (StringDesc) attMap.get("Neighborhood");
-			neighborhood.deleteAllFcts();
-			StringFct neighborhoodSim = new StringFct(p,StringConfig.NGRAM,neighborhood,"NeighborhoodSim");
+			StringFct neighborhoodSim = (StringFct) neighborhood.getFct("default function");
 			neighborhoodSim.setCaseSensitive(false);
 			neighborhoodSim.setSymmetric(true);
-			neighborhood.addFct(neighborhoodSim);
 			
 			// 6.Total Units
 			//Upper Bound
 			//If the number of units are slightly more, we penalize more heavily
 			IntegerDesc totalUnits = (IntegerDesc) attMap.get("TotalUnits");
-			IntegerFct  totalUnitSim = new IntegerFct(p,totalUnits,"TotalUnitsSim");
+			IntegerFct  totalUnitSim = (IntegerFct) totalUnits.getFct("default function");
+			totalUnitSim.setSymmetric(false);
 			totalUnitSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			totalUnitSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			totalUnitSim.setFunctionTypeR(NumberConfig.POLYNOMIAL_WITH);
 			totalUnitSim.setFunctionParameterL(1.0);
 			totalUnitSim.setFunctionParameterR(2.0);
-			totalUnits.addFct(totalUnitSim);
 			
 			//7.Year Built
 			IntegerDesc yearBuilt = (IntegerDesc) attMap.get("YearBuilt");
-			IntegerFct  yearBuiltSim = new IntegerFct(p,yearBuilt,"YearBuiltSim");
+			IntegerFct yearBuiltSim = (IntegerFct) yearBuilt.getFct("default function");
+			yearBuiltSim.setSymmetric(false);
 			yearBuiltSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			yearBuiltSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			yearBuiltSim.setFunctionTypeR(NumberConfig.CONSTANT);
 			yearBuiltSim.setFunctionParameterL(1.0);
 			yearBuiltSim.setFunctionParameterR(1.0);
-			yearBuilt.addFct(yearBuiltSim);
-			
 			
 			//8.AreaSqFt
 			//rename to area in square feet
 			FloatDesc areaSqFt = (FloatDesc) attMap.get("AreaSqFt");
-			FloatFct  areaSqFtSim = new FloatFct(p,areaSqFt,"AreaSqFtSim");
+			FloatFct  areaSqFtSim = (FloatFct) areaSqFt.getFct("default function");
+			areaSqFtSim.setSymmetric(false);
 			areaSqFtSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			areaSqFtSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			areaSqFtSim.setFunctionTypeR(NumberConfig.POLYNOMIAL_WITH);
 			areaSqFtSim.setFunctionParameterL(5.0);
 			areaSqFtSim.setFunctionParameterR(3.0);
-			areaSqFt.addFct(areaSqFtSim);
 			
 			//9.GrossIncomePerSqFt
 			FloatDesc grossIncomePerSqFt = (FloatDesc) attMap.get("GrossIncomePerSqFt");
-			FloatFct  grossIncomePerSqFtSim = new FloatFct(p,grossIncomePerSqFt,"GrossIncomePerSqFtSim");
+			FloatFct  grossIncomePerSqFtSim = (FloatFct) grossIncomePerSqFt.getFct("default function");
+			grossIncomePerSqFtSim.setSymmetric(false);
 			grossIncomePerSqFtSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			grossIncomePerSqFtSim.setFunctionTypeL(NumberConfig.CONSTANT);
 			grossIncomePerSqFtSim.setFunctionTypeR(NumberConfig.CONSTANT);
 			grossIncomePerSqFtSim.setFunctionParameterL(1.0);
 			grossIncomePerSqFtSim.setFunctionParameterR(1.0);
-			grossIncomePerSqFt.addFct(grossIncomePerSqFtSim);
 
 			//10.ExpensePerSqFt
 			FloatDesc expensePerSqFt = (FloatDesc) attMap.get("ExpensePerSqFt");
-			FloatFct  expensePerSqFtSim = new FloatFct(p,expensePerSqFt,"ExpensePerSqFtSim");
+			FloatFct  expensePerSqFtSim = (FloatFct) expensePerSqFt.getFct("default function");
+			expensePerSqFtSim.setSymmetric(false);
 			expensePerSqFtSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			expensePerSqFtSim.setFunctionTypeL(NumberConfig.CONSTANT);
 			expensePerSqFtSim.setFunctionTypeR(NumberConfig.CONSTANT);
 			expensePerSqFtSim.setFunctionParameterL(1.0);
 			expensePerSqFtSim.setFunctionParameterR(1.0);
-			expensePerSqFt.addFct(expensePerSqFtSim);
-			
+
 			//11.NetOperatingIncome
 			IntegerDesc netOperatingIncome = (IntegerDesc) attMap.get("NetOperatingIncome");
-			IntegerFct  netOperatingIncomeSim = new IntegerFct(p,netOperatingIncome,"netOperatingIncomeSim");
+			IntegerFct  netOperatingIncomeSim = (IntegerFct) netOperatingIncome.getFct("default function");
+			netOperatingIncomeSim.setSymmetric(false);
 			netOperatingIncomeSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			netOperatingIncomeSim.setFunctionTypeL(NumberConfig.CONSTANT);
 			netOperatingIncomeSim.setFunctionTypeR(NumberConfig.CONSTANT);
 			netOperatingIncomeSim.setFunctionParameterL(0.5);
 			netOperatingIncomeSim.setFunctionParameterR(0.5);
-			netOperatingIncome.addFct(netOperatingIncomeSim);
 			
 			//12.FullMarketValue
 			IntegerDesc fullMarketValue = (IntegerDesc) attMap.get("FullMarketValue");
-			IntegerFct  fullMarketValueSim = new IntegerFct(p,fullMarketValue,"FullMarketValueSim");
+			IntegerFct  fullMarketValueSim = (IntegerFct) fullMarketValue.getFct("default function");
+			fullMarketValueSim.setSymmetric(false);
 			fullMarketValueSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			fullMarketValueSim.setFunctionTypeL(NumberConfig.CONSTANT);
 			fullMarketValueSim.setFunctionTypeR(NumberConfig.CONSTANT);
 			fullMarketValueSim.setFunctionParameterL(0.5);
 			fullMarketValueSim.setFunctionParameterR(0.5);
-			fullMarketValue.addFct(fullMarketValueSim);
 			
 			//13.MarketValuePerSqFt
 			FloatDesc marketValuePerSqFt = (FloatDesc) attMap.get("MarketValuePerSqFt");
-			FloatFct  marketValuePerSqFtSim = new FloatFct(p,marketValuePerSqFt,"MarketValuePerSqFtSim");
+			FloatFct  marketValuePerSqFtSim = (FloatFct) marketValuePerSqFt.getFct("default function");
+			marketValuePerSqFtSim.setSymmetric(false);
 			marketValuePerSqFtSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			marketValuePerSqFtSim.setFunctionTypeL(NumberConfig.CONSTANT);
 			marketValuePerSqFtSim.setFunctionTypeR(NumberConfig.CONSTANT);
-			marketValuePerSqFtSim.setFunctionParameterL(0.5);
-			marketValuePerSqFtSim.setFunctionParameterR(0.5);
-			marketValuePerSqFt.addFct(marketValuePerSqFtSim);
-			System.out.println(marketValuePerSqFt.getMax());
-			
+			marketValuePerSqFtSim.setFunctionParameterL(1.0);
+			marketValuePerSqFtSim.setFunctionParameterR(1.0);
 			
 			// set up query and retrieval
 			Retrieval r = new Retrieval(condo, cb);
 			Instance q = r.getQueryInstance();	
-			q.addAttribute(yearBuilt,2000);
-			//q.addAttribute(totalUnits,40);
-			//q.addAttribute(neighborhood, "EST SIDE");
-			//q.addAttribute(mileage.getName(), 0.2);
+			q.addAttribute(address,"AVENUE" );
+			//q.addAttribute(lot,"1-0007-7501");
+			//q.addAttribute(buildingClass,"R9-CONDOMINIUM");
+			//q.addAttribute(neighborhood,"FINANCIAL");
+			//q.addAttribute(totalUnits,42);
+			//q.addAttribute(yearBuilt, 1920);
+			//q.addAttribute(areaSqFt, 850);
+			//q.addAttribute(grossIncomePerSqFt,36.51);
+			//q.addAttribute(expensePerSqFt,9.2);
+			//q.addAttribute(netOperatingIncome, 990000);
 			r.start();
-			print(r,neighborhood);
-			
+			print(r,address,marketValuePerSqFt);
+
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private static void print(Retrieval r, AttributeDesc d) {
-		for (Entry<Instance, Similarity> entry: r.entrySet()) {
-			System.out.println("\nSimilarity: " + entry.getValue().getValue()
-					+ " to case: " + entry.getKey().getAttForDesc(d).getValueAsString());
-		}
+	private static void print(Retrieval r, AttributeDesc d,AttributeDesc priceDescriptor) {
+		
+		    HashMap<Instance,Similarity> map = (HashMap<Instance, Similarity>) r;
+	        ValueComparator bvc =  new ValueComparator(map);
+	        TreeMap<Instance,Similarity> sorted_map = new TreeMap<Instance,Similarity>(bvc);
+	        sorted_map.putAll(map);
+	        int K=4;
+	        int index=0;
+	        double predictedPrice=0.0;
+	        for (Entry<Instance, Similarity> entry: sorted_map.entrySet()) {
+	        	System.out.println("\nSimilarity: " + entry.getValue().getValue()
+	        			+ " to case: " + entry.getKey().getAttForDesc(d).getValueAsString());
+	        	double entryPrice=Double.parseDouble(entry.getKey().getAttForDesc(priceDescriptor).getValueAsString());
+	        	predictedPrice+=entryPrice/(K+0.0);
+	        	index+=1;
+	        	if(index>=K)
+	        	{
+	        		break;
+	        	}
+	        }
+	        System.out.println("Regressed per square feet price:"+predictedPrice);
+		
 	}
 	
+}
+
+class ValueComparator implements Comparator<Instance> {
+
+    Map<Instance, Similarity> base;
+    public ValueComparator(Map<Instance, Similarity> base) {
+        this.base = base;
+    }
+
+    // Note: this comparator imposes orderings that are inconsistent with equals.    
+    public int compare(Instance a, Instance b) {
+        if (base.get(a).getValue() >= base.get(b).getValue()) {
+            return -1;
+        } else {
+            return 1;
+        } // returning 0 would merge keys
+    }
 }
