@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -86,12 +87,12 @@ public class CondoCBRRegression {
 			SymbolDesc buildingClass = (SymbolDesc) attMap.get("BuildingClassification");
 			SymbolFct buildSim = (SymbolFct) buildingClass.getFct("default function");
 			buildSim.setSymmetric(true);
-			buildSim.setSimilarity("R2-CONDOMINIUM", "R4-CONDOMINIUM", (2.0/14.0));
-			buildSim.setSimilarity("R2-CONDOMINIUM", "R9-CONDOMINIUM", (7.0/14.0));
-			buildSim.setSimilarity("R2-CONDOMINIUM", "RR-CONDOMINIUM", (14.0/14.0));
-			buildSim.setSimilarity("R4-CONDOMINIUM", "R9-CONDOMINIUM", (5.0/14.0));
-			buildSim.setSimilarity("R4-CONDOMINIUM", "RR-CONDOMINIUM", (12.0/14.0));
-			buildSim.setSimilarity("R9-CONDOMINIUM", "RR-CONDOMINIUM", (7.0/14.0));
+			buildSim.setSimilarity("R2-CONDOMINIUM", "R4-CONDOMINIUM", 0.857);
+			buildSim.setSimilarity("R2-CONDOMINIUM", "R9-CONDOMINIUM", 0.5);
+			buildSim.setSimilarity("R2-CONDOMINIUM", "RR-CONDOMINIUM", 0.0);
+			buildSim.setSimilarity("R4-CONDOMINIUM", "R9-CONDOMINIUM", 0.6428);
+			buildSim.setSimilarity("R4-CONDOMINIUM", "RR-CONDOMINIUM", 0.1428);
+			buildSim.setSimilarity("R9-CONDOMINIUM", "RR-CONDOMINIUM", 0.5);
 			
 			// 5.Neighborhood
 			//Need to check if this is fine or needs to be ngram
@@ -186,6 +187,19 @@ public class CondoCBRRegression {
 			marketValuePerSqFtSim.setFunctionParameterL(1.0);
 			marketValuePerSqFtSim.setFunctionParameterR(1.0);
 			
+			
+			//Create arraylist with all the attributes
+			ArrayList<AttributeDesc> attrList = new ArrayList<AttributeDesc>();
+			attrList.add(address);
+			attrList.add(lot);
+			attrList.add(buildingClass);
+			attrList.add(neighborhood);
+			attrList.add(totalUnits);
+			attrList.add(yearBuilt);
+			attrList.add(areaSqFt);
+			attrList.add(grossIncomePerSqFt);
+			attrList.add(expensePerSqFt);
+			attrList.add(marketValuePerSqFt);
 			// set up query and retrieval
 			Retrieval r = new Retrieval(condo, cb);
 			Instance q = r.getQueryInstance();	
@@ -200,7 +214,7 @@ public class CondoCBRRegression {
 			//q.addAttribute(expensePerSqFt,9.2);
 			//q.addAttribute(netOperatingIncome, 990000);
 			r.start();
-			print(r,address,marketValuePerSqFt);
+			print(r,address,marketValuePerSqFt,attrList);
 
 		}
 		catch (Exception e) {
@@ -208,7 +222,7 @@ public class CondoCBRRegression {
 		}
 	}
 	
-	private static void print(Retrieval r, AttributeDesc d,AttributeDesc priceDescriptor) {
+	private static void print(Retrieval r, AttributeDesc d,AttributeDesc priceDescriptor,ArrayList<AttributeDesc> attrList) {
 		
 		    HashMap<Instance,Similarity> map = (HashMap<Instance, Similarity>) r;
 	        ValueComparatorRegression bvc =  new ValueComparatorRegression(map);
@@ -218,8 +232,13 @@ public class CondoCBRRegression {
 	        int index=0;
 	        double predictedPrice=0.0;
 	        for (Entry<Instance, Similarity> entry: sorted_map.entrySet()) {
-	        	System.out.println("\nSimilarity: " + entry.getValue().getValue()
-	        			+ " to case: " + entry.getKey().getAttForDesc(d).getValueAsString());
+	        	
+	        	System.out.println("\nSimilarity: " + entry.getValue().getValue());
+	        	for(AttributeDesc desc:attrList)
+	        	{
+	        		System.out.print(desc.getName()+":"+entry.getKey().getAttForDesc(desc).getValueAsString()+ " | ");
+	        	}
+	        	System.out.println();
 	        	double entryPrice=Double.parseDouble(entry.getKey().getAttForDesc(priceDescriptor).getValueAsString());
 	        	predictedPrice+=entryPrice/(K+0.0);
 	        	index+=1;
