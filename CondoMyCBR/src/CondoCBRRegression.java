@@ -27,7 +27,7 @@ import de.dfki.mycbr.core.similarity.config.NumberConfig;
 import de.dfki.mycbr.core.similarity.config.StringConfig;
 
 
-public class CondoCBR {
+public class CondoCBRRegression {
 	
 	static Project p;
 	static Concept condo;
@@ -210,7 +210,7 @@ public class CondoCBR {
 	private static void print(Retrieval r, AttributeDesc d,AttributeDesc priceDescriptor) {
 		
 		    HashMap<Instance,Similarity> map = (HashMap<Instance, Similarity>) r;
-	        ValueComparator bvc =  new ValueComparator(map);
+	        ValueComparatorRegression bvc =  new ValueComparatorRegression(map);
 	        TreeMap<Instance,Similarity> sorted_map = new TreeMap<Instance,Similarity>(bvc);
 	        sorted_map.putAll(map);
 	        int K=4;
@@ -233,10 +233,10 @@ public class CondoCBR {
 	
 }
 
-class ValueComparator implements Comparator<Instance> {
+class ValueComparatorRegression implements Comparator<Instance> {
 
     Map<Instance, Similarity> base;
-    public ValueComparator(Map<Instance, Similarity> base) {
+    public ValueComparatorRegression(Map<Instance, Similarity> base) {
         this.base = base;
     }
 
