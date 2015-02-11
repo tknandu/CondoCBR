@@ -56,7 +56,7 @@ public class CondoCBRRegression {
 			condo =  p.createTopConcept("Condo");
 			cb = p.createDefaultCB("myCaseBase");
 			
-			readData("data/processedCondo_latest.csv");
+			readData("data/processedCondo_latest_final.csv");
 			System.out.println("No of cases read: "+cb.getCases().size());
 			System.out.println(condo.getAttributeDescs());
 			
@@ -154,8 +154,8 @@ public class CondoCBRRegression {
 			expensePerSqFtSim.setFunctionParameterR(2.0);
 
 			//11.NetOperatingIncome
-			IntegerDesc netOperatingIncome = (IntegerDesc) attMap.get("NetOperatingIncome");
-			IntegerFct  netOperatingIncomeSim = (IntegerFct) netOperatingIncome.getFct("default function");
+			FloatDesc netOperatingIncome = (FloatDesc) attMap.get("NetOperatingIncomePerSqFt");
+			FloatFct  netOperatingIncomeSim = (FloatFct) netOperatingIncome.getFct("default function");
 			netOperatingIncomeSim.setSymmetric(false);
 			netOperatingIncomeSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			netOperatingIncomeSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
@@ -165,6 +165,7 @@ public class CondoCBRRegression {
 			
 			//12.FullMarketValue
 			//To be dropped
+			/*
 			IntegerDesc fullMarketValue = (IntegerDesc) attMap.get("FullMarketValue");
 			IntegerFct  fullMarketValueSim = (IntegerFct) fullMarketValue.getFct("default function");
 			fullMarketValueSim.setSymmetric(false);
@@ -173,7 +174,7 @@ public class CondoCBRRegression {
 			fullMarketValueSim.setFunctionTypeR(NumberConfig.CONSTANT);
 			fullMarketValueSim.setFunctionParameterL(1.0);
 			fullMarketValueSim.setFunctionParameterR(1.0);
-			
+			*/
 			//13.MarketValuePerSqFt
 			//Needs to be set(in the case of recommendation)
 			FloatDesc marketValuePerSqFt = (FloatDesc) attMap.get("MarketValuePerSqFt");
@@ -227,7 +228,8 @@ public class CondoCBRRegression {
 	        		break;
 	        	}
 	        }
-	        System.out.println("Regressed per square feet price:"+predictedPrice);
+	       // Here we are doing recommendation
+	       //System.out.println("Regressed per square feet price:"+predictedPrice);
 		
 	}
 	

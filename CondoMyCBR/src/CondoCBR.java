@@ -56,7 +56,7 @@ public class CondoCBR {
 			condo =  p.createTopConcept("Condo");
 			cb = p.createDefaultCB("myCaseBase");
 			
-			readData("data/processedCondo_latest.csv");
+			readData("data/processedCondo_latest_final.csv");
 			System.out.println("No of cases read: "+cb.getCases().size());
 			System.out.println(condo.getAttributeDescs());
 			
@@ -154,8 +154,8 @@ public class CondoCBR {
 			expensePerSqFtSim.setFunctionParameterR(2.0);
 
 			//11.NetOperatingIncome
-			IntegerDesc netOperatingIncome = (IntegerDesc) attMap.get("NetOperatingIncome");
-			IntegerFct  netOperatingIncomeSim = (IntegerFct) netOperatingIncome.getFct("default function");
+			FloatDesc netOperatingIncome = (FloatDesc) attMap.get("NetOperatingIncomePerSqFt");
+			FloatFct  netOperatingIncomeSim = (FloatFct) netOperatingIncome.getFct("default function");
 			netOperatingIncomeSim.setSymmetric(false);
 			netOperatingIncomeSim.setDistanceFct(DistanceConfig.DIFFERENCE);
 			netOperatingIncomeSim.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
@@ -165,6 +165,7 @@ public class CondoCBR {
 			
 			//12.FullMarketValue
 			//To be dropped
+			/*
 			IntegerDesc fullMarketValue = (IntegerDesc) attMap.get("FullMarketValue");
 			IntegerFct  fullMarketValueSim = (IntegerFct) fullMarketValue.getFct("default function");
 			fullMarketValueSim.setSymmetric(false);
@@ -173,6 +174,7 @@ public class CondoCBR {
 			fullMarketValueSim.setFunctionTypeR(NumberConfig.CONSTANT);
 			fullMarketValueSim.setFunctionParameterL(1.0);
 			fullMarketValueSim.setFunctionParameterR(1.0);
+			*/
 			
 			//13.MarketValuePerSqFt
 			//Needs to be set(in the case of recommendation)
@@ -216,17 +218,21 @@ public class CondoCBR {
 	        int K=4;
 	        int index=0;
 	        double predictedPrice=0.0;
+	        double similaritySum=0.0;
 	        for (Entry<Instance, Similarity> entry: sorted_map.entrySet()) {
 	        	System.out.println("\nSimilarity: " + entry.getValue().getValue()
 	        			+ " to case: " + entry.getKey().getAttForDesc(d).getValueAsString());
 	        	double entryPrice=Double.parseDouble(entry.getKey().getAttForDesc(priceDescriptor).getValueAsString());
-	        	predictedPrice+=entryPrice/(K+0.0);
+	        	double similarity=entry.getValue().getValue();
+	        	predictedPrice+=entryPrice*similarity;
+	        	similaritySum+=similarity;
 	        	index+=1;
 	        	if(index>=K)
 	        	{
 	        		break;
 	        	}
 	        }
+	        predictedPrice/=(similaritySum);
 	        System.out.println("Regressed per square feet price:"+predictedPrice);
 		
 	}
